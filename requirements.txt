@@ -1,0 +1,35 @@
+# 강화학습 환경 요구사항
+# Python 3.12 기준
+
+# 핵심 라이브러리 (버전 엄격히 지정)
+ray[rllib]==2.50.1
+gymnasium[mujoco]==1.2.1
+mujoco==3.3.7
+
+# 딥러닝 프레임워크
+torch
+
+# 데이터 처리 및 분석
+pandas
+pyarrow
+numpy
+scipy
+
+# 시각화
+matplotlib
+seaborn
+
+# 개발 환경
+jupyter
+notebook
+ipykernel
+
+# 유틸리티
+tqdm
+wandb
+tensorboard
+
+# 추가 RL 라이브러리 (필요 시)
+# stable-baselines3
+# gymnasium[atari]
+# gymnasium[classic-control]
