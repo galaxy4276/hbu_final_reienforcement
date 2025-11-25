@@ -10,14 +10,21 @@ from ray import tune
 # Configure the PPO algorithm.
 config = (
     PPOConfig()
-    .environment("CartPole-v1")
+    .environment("HalfCheetah-v5")
+    .resources(
+        num_gpus=1,
+    )
+    .env_runners(
+        num_env_runners=10,
+    )
     .training(
         lr=0.0003,
-        # Run 6 SGD minibatch iterations on a batch.
-        num_epochs=6,
+        # Run 20 SGD minibatch iterations on a batch.
+        num_epochs=20,
         # Weigh the value function loss smaller than
         # the policy loss.
         vf_loss_coeff=0.01,
+        train_batch_size=8000,
     )
     .evaluation(
         evaluation_interval=5,
@@ -27,11 +34,11 @@ config = (
     )
     .rl_module(
         model_config=DefaultModelConfig(
-            fcnet_hiddens=[32],
-            fcnet_activation="linear",
+            fcnet_hiddens=[256, 256],
+            fcnet_activation="tanh",
             # Share encoder layers between value network
             # and policy.
-            vf_share_layers=True,
+            vf_share_layers=False,
         ),
     )
 )
@@ -46,12 +53,12 @@ tuner = tune.Tuner(
     param_space=config,
     run_config=tune.RunConfig(
         stop={
-            metric: 450.0,
+            metric: 3000.0, # HalfCheetah expert usually gets > 3000
         },
-        name="docs_rllib_offline_pretrain_ppo",
+        name="halfcheetah_expert_ppo",
         verbose=2,
         checkpoint_config=tune.CheckpointConfig(
-            checkpoint_frequency=1,
+            checkpoint_frequency=5,
             checkpoint_at_end=True,
         ),
     ),

@@ -9,9 +9,9 @@ from pathlib import Path
 import os
 
 # 절대 경로로 변환하여 데이터 경로 설정
-# orl_2에서 생성된 데이터는 cartpole-v1 하위에 저장됨
+# orl_2에서 생성된 데이터는 halfcheetah_expert_ppo 하위에 저장됨
 script_dir = Path(__file__).parent
-data_path = (script_dir / "docs_rllib_offline_pretrain_ppo" / "cartpole-v1").as_posix()
+data_path = (script_dir / "halfcheetah_expert_ppo" / "HalfCheetah-v5").as_posix()
 
 print(f"Using offline data from: {data_path}")
 print(f"Data exists: {os.path.exists(data_path)}")
@@ -20,15 +20,16 @@ print(f"Data exists: {os.path.exists(data_path)}")
 config = (
     BCConfig()
     .environment(
-        # Use the `CartPole-v1` environment from which the
+        # Use the `HalfCheetah-v5` environment from which the
         # data was recorded. This is merely for receiving
         # action and observation spaces and to use it during
         # evaluation.
-        env="CartPole-v1",
+        env="HalfCheetah-v5",
     )
     .learners(
         # Use a single local learner.
         num_learners=0,
+        num_gpus_per_learner=1,
     )
     .training(
         # This has to be defined in the new offline RL API.
@@ -82,9 +83,9 @@ tuner = tune.Tuner(
     "BC",
     param_space=config,
     run_config=tune.RunConfig(
-        name="docs_rllib_offline_bc",
-        # Stop behavior cloning when we reach 450 in return.
-        stop={metric: 450.0},
+        name="halfcheetah_offline_bc",
+        # Stop behavior cloning when we reach 3000 in return.
+        stop={metric: 3000.0},
         checkpoint_config=tune.CheckpointConfig(
             # Only checkpoint at the end to be faster.
             checkpoint_frequency=0,

@@ -3,7 +3,7 @@
 
 # 핵심 라이브러리 (버전 엄격히 지정)
 ray[rllib]==2.50.1
-gymnasium[mujoco]==1.2.1
+gymnasium[mujoco]==1.1.1
 mujoco==3.3.7
 
 # 딥러닝 프레임워크

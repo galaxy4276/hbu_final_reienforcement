@@ -12,27 +12,29 @@ from ray.rllib.core import (
 from ray.rllib.core.rl_module import RLModuleSpec
 from ray.rllib.core.rl_module.default_model_config import DefaultModelConfig
 
-best_checkpoint = "/home/pz1004/ray_results/docs_rllib_offline_pretrain_ppo/PPO_CartPole-v1_84fbc_00000_0_2025-11-17_23-48-46/checkpoint_000049"
+# Placeholder for the best checkpoint path. 
+# You will need to update this after running orl_1_Training_an_expert_policy.py
+best_checkpoint = "/home/com/hbu_final_reienforcement/base/"
 
 # Store recording data under the following path.
-data_path = "docs_rllib_offline_pretrain_ppo"
+data_path = "halfcheetah_expert_ppo"
 
 # Configure the algorithm for recording.
 config = (
     PPOConfig()
     # The environment needs to be specified.
     .environment(
-        env="CartPole-v1",
+        env="HalfCheetah-v5",
     )
     # Make sure to sample complete episodes because
     # you want to record RLlib's episode objects.
     .env_runners(
         batch_mode="complete_episodes",
     )
-    # Set up 5 evaluation `EnvRunners` for recording.
+    # Set up 10 evaluation `EnvRunners` for recording.
     # Sample 50 episodes in each evaluation rollout.
     .evaluation(
-        evaluation_num_env_runners=2,
+        evaluation_num_env_runners=10,
         evaluation_duration=50,
         evaluation_duration_unit="episodes",
     )
@@ -42,11 +44,11 @@ config = (
     # the module state can't be loaded.
     .rl_module(
         model_config=DefaultModelConfig(
-            fcnet_hiddens=[32],
-            fcnet_activation="linear",
+            fcnet_hiddens=[256, 256],
+            fcnet_activation="tanh",
             # Share encoder layers between value network
             # and policy.
-            vf_share_layers=True,
+            vf_share_layers=False,
         ),
     )
     # Define the output path and format. In this example you
