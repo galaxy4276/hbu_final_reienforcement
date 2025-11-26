@@ -11,35 +11,40 @@ from ray import tune
 config = (
     PPOConfig()
     .environment("HalfCheetah-v5")
-    .resources(
-        num_gpus=1,
+    .learners(
+        num_learners=1,
+        num_gpus_per_learner=1,
     )
     .env_runners(
-        num_env_runners=10,
+        num_env_runners=12,
+        num_envs_per_env_runner=5,
+        observation_filter="MeanStdFilter",
     )
     .training(
-        lr=0.0003,
-        # Run 20 SGD minibatch iterations on a batch.
-        num_epochs=20,
-        # Weigh the value function loss smaller than
-        # the policy loss.
-        vf_loss_coeff=0.01,
-        train_batch_size=8000,
+        # Learning Parameters
+        lr=[[0, 3e-4], [2_000_000, 1e-5]],  # lr=3e-4,
+        train_batch_size=4096,
+        minibatch_size=512,
+        num_epochs=10,
+        # PPO Standard Parameters
+        clip_param=0.2,
+        vf_loss_coeff=0.5,
+        entropy_coeff=0.0,
+        grad_clip=0.5,
+        gamma=0.99,
+        lambda_=0.95,
+        # Model Parameters
+        model={
+            "fcnet_hiddens": [256, 256],
+            "fcnet_activation": "tanh",
+            "vf_share_layers": False,
+        },
     )
     .evaluation(
-        evaluation_interval=5,
+        evaluation_interval=10,
         evaluation_num_env_runners=1,
         evaluation_duration=10,
         evaluation_duration_unit="episodes",
-    )
-    .rl_module(
-        model_config=DefaultModelConfig(
-            fcnet_hiddens=[256, 256],
-            fcnet_activation="tanh",
-            # Share encoder layers between value network
-            # and policy.
-            vf_share_layers=False,
-        ),
     )
 )
 
@@ -53,12 +58,12 @@ tuner = tune.Tuner(
     param_space=config,
     run_config=tune.RunConfig(
         stop={
-            metric: 3000.0, # HalfCheetah expert usually gets > 3000
+            metric: 3000.0,  # HalfCheetah expert usually gets > 3000
         },
         name="halfcheetah_expert_ppo",
         verbose=2,
         checkpoint_config=tune.CheckpointConfig(
-            checkpoint_frequency=5,
+            checkpoint_frequency=10,
             checkpoint_at_end=True,
         ),
     ),
@@ -67,13 +72,6 @@ results = tuner.fit()
 
 # Store the best checkpoint to use it later for recording
 # an expert policy.
-best_checkpoint = (
-    results
-    .get_best_result(
-        metric=metric,
-        mode="max"
-    )
-    .checkpoint.path
-)
+best_checkpoint = results.get_best_result(metric=metric, mode="max").checkpoint.path
 
 print(f"Best checkpoint path: {best_checkpoint}")
