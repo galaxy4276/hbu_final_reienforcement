@@ -1,182 +1,234 @@
 from ray.rllib.algorithms.ppo import PPOConfig
-from ray.rllib.core.rl_module.default_model_config import DefaultModelConfig
 from ray.rllib.utils.metrics import (
     ENV_RUNNER_RESULTS,
     EVALUATION_RESULTS,
     EPISODE_RETURN_MEAN,
 )
-from ray import tune
 import os
-
-# Find the latest checkpoint from the expert training
 import glob
+import shutil
+
+# Base directory for expert results
+expert_results_dir = os.path.expanduser(
+    "~/ray_results/halfcheetah_expert_ppo/PPO_HalfCheetah-v5_35463_00000_0_2025-11-27_06-16-43"
+)
+# Directory for finetuning results (we might want to continue in the same dir or a new one)
+# Since we are resuming, we can just continue saving to the new dir, but restore from the old one.
+finetuning_dir = os.path.expanduser("~/ray_results/halfcheetah_online_finetuning")
+
 
 def get_latest_checkpoint(base_dir):
-    # Find all experiment directories
-    exp_dirs = glob.glob(os.path.join(base_dir, "PPO_HalfCheetah-v5_*"))
-    if not exp_dirs:
-        raise ValueError(f"No experiment directories found in {base_dir}")
-    
-    # Sort by modification time (latest first)
-    latest_exp_dir = max(exp_dirs, key=os.path.getmtime)
-    print(f"Found latest experiment directory: {latest_exp_dir}")
-    
-    # Find the best checkpoint in this directory (assuming we want the one at the end or best metric)
-    # Since we don't have the Tuner object here easily to query 'best', we'll take the last checkpoint directory
-    # usually named 'checkpoint_000XXX'
-    checkpoint_dirs = glob.glob(os.path.join(latest_exp_dir, "checkpoint_*"))
+    # Find all checkpoint directories
+    checkpoint_dirs = glob.glob(os.path.join(base_dir, "checkpoint_*"))
     if not checkpoint_dirs:
-        raise ValueError(f"No checkpoints found in {latest_exp_dir}")
-        
+        raise ValueError(f"No checkpoints found in {base_dir}")
+
+    # Sort by modification time (latest first)
     latest_checkpoint = max(checkpoint_dirs, key=os.path.getmtime)
     return latest_checkpoint
 
-# Base directory for expert results
-expert_results_dir = os.path.expanduser("~/ray_results/halfcheetah_expert_ppo")
-# Directory for finetuning results
-finetuning_dir = os.path.expanduser("~/ray_results/halfcheetah_online_finetuning")
 
-checkpoint_to_restore = None
-
-# 1. Try to find a checkpoint from a previous finetuning run
+print(f"Searching for checkpoints in {expert_results_dir}...")
 try:
-    print(f"Checking for existing finetuning checkpoints in {finetuning_dir}...")
-    checkpoint_to_restore = get_latest_checkpoint(finetuning_dir)
-    print(f"Resuming from finetuning checkpoint: {checkpoint_to_restore}")
-except (ValueError, FileNotFoundError):
-    print("No finetuning checkpoint found. Falling back to expert checkpoint.")
-    # 2. If no finetuning checkpoint, load the expert checkpoint
-    try:
-        checkpoint_to_restore = get_latest_checkpoint(expert_results_dir)
-        print(f"Starting fresh from expert checkpoint: {checkpoint_to_restore}")
-    except Exception as e:
-        print(f"Error finding expert checkpoint: {e}")
-        # Fallback
-        checkpoint_to_restore = "/home/kimjihun/ray_results/halfcheetah_expert_ppo/PPO_HalfCheetah-v5_09c7e_00000_0_2025-11-25_15-43-23/" 
+    checkpoint_to_restore = get_latest_checkpoint(expert_results_dir)
+    print(f"Found latest checkpoint: {checkpoint_to_restore}")
+except Exception as e:
+    print(f"Error finding checkpoint: {e}")
+    exit(1)
 
-# Configure the PPO algorithm for fine-tuning.
+# Configure the PPO algorithm matching orl_1 exactly
 config = (
     PPOConfig()
     .environment("HalfCheetah-v5")
-    .resources(
-        num_gpus=1,
-    )
-    .env_runners(
-        num_env_runners=10,
-    )
+    .framework("torch")
     .training(
-        lr=0.00005, # Lower learning rate for fine-tuning
-        # Run 10 SGD minibatch iterations on a batch.
-        train_batch_size=2048,
-        minibatch_size=64,
-        num_epochs=10,
-        # Weigh the value function loss smaller than
-        # the policy loss.
+        # Learning Parameters - Tuned for 5000+ Score
+        lr=[[0, 3e-4], [10_000_000, 0.0]],  # Linear decay to 0
+        train_batch_size=8192,
+        minibatch_size=1024,
+        num_epochs=20,
+        # PPO Standard Parameters
         clip_param=0.2,
-        vf_loss_coeff=0.5,
-        entropy_coeff=0.0,
-        grad_clip=0.5,
+        vf_loss_coeff=1.0,  # Increased for better value estimation
+        entropy_coeff=0.001,  # Slight exploration
+        grad_clip=0.8,  # Relaxed clipping for larger model
         gamma=0.99,
         lambda_=0.95,
+        # Model Parameters - Deep & Wide
+        model={
+            "fcnet_hiddens": [512, 512, 256],
+            "fcnet_activation": "tanh",
+            "vf_share_layers": False,
+            "free_log_std": True,
+        },
+    )
+    .env_runners(
+        num_env_runners=5,
+        num_envs_per_env_runner=4,  # Total 20 envs
+        observation_filter="MeanStdFilter",
+    )
+    .learners(
+        num_learners=1,
+        num_gpus_per_learner=1,
     )
     .evaluation(
         evaluation_interval=5,
         evaluation_num_env_runners=1,
         evaluation_duration=10,
+        evaluation_parallel_to_training=True,
         evaluation_duration_unit="episodes",
     )
-    .rl_module(
-        model_config=DefaultModelConfig(
-            fcnet_hiddens=[256, 256],
-            fcnet_activation="tanh",
-            # Share encoder layers between value network
-            # and policy.
-            vf_share_layers=False,
-        ),
-    )
 )
 
-# Define the metric to use for stopping.
-metric = f"{EVALUATION_RESULTS}/{ENV_RUNNER_RESULTS}/{EPISODE_RETURN_MEAN}"
-
-# Define the Tuner.
-tuner = tune.Tuner(
-    "PPO",
-    param_space=config,
-    run_config=tune.RunConfig(
-        stop={
-            metric: 5000.0, # Target higher return than offline
-        },
-        name="halfcheetah_online_finetuning",
-        verbose=2,
-        checkpoint_config=tune.CheckpointConfig(
-            checkpoint_frequency=5,
-            checkpoint_at_end=True,
-        ),
-    ),
-)
-
-# Restore from the offline checkpoint before training
-# Note: In the new API, we might need to load the state differently or use `restore` on the algorithm object if we were not using Tuner.
-# However, with Tuner, we can't easily inject the restore call before fit() unless we use a custom trainable or restore from a checkpoint of the SAME algorithm.
-# Since we are switching from BC to PPO, we need to load the weights specifically.
-
-# Alternative approach: Build the algo, restore weights, and then train using `algo.train()` loop or wrap it.
-# But for simplicity and consistency with previous scripts, let's try to use `restore` if possible, but BC and PPO have different states.
-# We only want to transfer the policy weights.
-
-# Let's use a custom training loop for fine-tuning to ensure we load weights correctly.
-
-print("Starting Fine-tuning...")
+print("Building algorithm...")
 algo = config.build()
 
-# Try to restore the whole algorithm state
-if checkpoint_to_restore:
+# Strategy:
+# 1. Try to resume from a previous FINETUNING checkpoint (full state restore).
+# 2. If no finetuning checkpoint, load weights from EXPERT checkpoint (fresh optimizer).
+#    This avoids the 'beta1 as Tensor' error caused by incompatible optimizer state in the expert checkpoint.
+
+finetuning_checkpoint = None
+try:
+    finetuning_checkpoint = get_latest_checkpoint(finetuning_dir)
+    print(f"Found existing finetuning checkpoint: {finetuning_checkpoint}")
+except (ValueError, FileNotFoundError):
+    print("No existing finetuning checkpoint found.")
+
+if finetuning_checkpoint:
+    print(f"Resuming training from finetuning checkpoint: {finetuning_checkpoint}")
     try:
-        algo.restore(checkpoint_to_restore)
-        print(f"Restored state from {checkpoint_to_restore}")
+        algo.restore(finetuning_checkpoint)
+        print("Successfully restored from finetuning checkpoint.")
     except Exception as e:
-        print(f"Failed to restore state: {e}")
-        pass
+        print(f"Failed to restore finetuning checkpoint: {e}")
+        print("Will attempt to start fresh from expert weights.")
+        finetuning_checkpoint = None
+
+if not finetuning_checkpoint:
+    print(f"Loading expert checkpoint: {checkpoint_to_restore}")
+    try:
+        # Standard restore to get weights AND MeanStdFilter state
+        algo.restore(checkpoint_to_restore)
+        print("Successfully restored checkpoint (weights + filter + optimizer).")
+
+        # PATCH: Fix optimizer state (betas as Tensors) which causes errors in newer PyTorch versions
+        def fix_optimizer_state(learner):
+            import torch
+            import torch.optim as optim
+
+            print(f"DEBUG: Inspecting learner {type(learner)}")
+            print(f"DEBUG: Learner keys: {learner.__dict__.keys()}")
+
+            optimizers = []
+
+            # Recursive search for optimizers in the learner object
+            visited = set()
+
+            def find_optimizers(obj, depth=0):
+                if depth > 3:
+                    return
+                if id(obj) in visited:
+                    return
+                visited.add(id(obj))
+
+                if isinstance(obj, optim.Optimizer):
+                    optimizers.append(obj)
+                    return
+
+                if isinstance(obj, (list, tuple)):
+                    for item in obj:
+                        find_optimizers(item, depth + 1)
+                elif isinstance(obj, dict):
+                    for v in obj.values():
+                        find_optimizers(v, depth + 1)
+                elif hasattr(obj, "__dict__"):
+                    for k, v in obj.__dict__.items():
+                        # Skip private ray attributes to avoid recursion hell
+                        if k.startswith("_ray"):
+                            continue
+                        find_optimizers(v, depth + 1)
+
+            find_optimizers(learner)
+
+            unique_optimizers = list(set(optimizers))
+            print(
+                f"DEBUG: Found {len(unique_optimizers)} unique optimizers via recursive search."
+            )
+
+            fixed_count = 0
+            for i, opt in enumerate(unique_optimizers):
+                print(f"DEBUG: Checking optimizer {i}: {type(opt)}")
+                for group_idx, group in enumerate(opt.param_groups):
+                    if "betas" in group:
+                        b1, b2 = group["betas"]
+                        updated = False
+                        if isinstance(b1, torch.Tensor):
+                            b1 = b1.item()
+                            updated = True
+                        if isinstance(b2, torch.Tensor):
+                            b2 = b2.item()
+                            updated = True
+
+                        if updated:
+                            group["betas"] = (b1, b2)
+                            fixed_count += 1
+                            print(
+                                f"DEBUG: FIXED betas in optimizer {i} group {group_idx}"
+                            )
+            return fixed_count
+
+        print("Applying optimizer patch to fix tensor betas...")
+        results = algo.learner_group.foreach_learner(fix_optimizer_state)
+        print(f"Optimizer patch results: {results}")
+
+    except Exception as e:
+        print(f"Failed to restore expert checkpoint: {e}")
+        print("CRITICAL: Could not load expert checkpoint.")
+        exit(1)
+
+
+print("Starting training loop...")
 
 # Manual training loop
-for i in range(100):
+# We'll run for a large number of iterations, but stop if we hit the target
+for i in range(10000):
     result = algo.train()
-    
-    # Debug keys if metric is missing
-    if ENV_RUNNER_RESULTS in result and EPISODE_RETURN_MEAN not in result[ENV_RUNNER_RESULTS]:
-        print(f"Available keys in result[{ENV_RUNNER_RESULTS}]: {result[ENV_RUNNER_RESULTS].keys()}")
-    
-    # Handle potential missing keys gracefully or debug
-    try:
+
+    # Extract and print relevant metrics
+    mean_return = None
+    total_steps = result["num_env_steps_sampled_lifetime"]
+
+    if (
+        EVALUATION_RESULTS in result
+        and ENV_RUNNER_RESULTS in result[EVALUATION_RESULTS]
+        and EPISODE_RETURN_MEAN in result[EVALUATION_RESULTS][ENV_RUNNER_RESULTS]
+    ):
+        mean_return = result[EVALUATION_RESULTS][ENV_RUNNER_RESULTS][
+            EPISODE_RETURN_MEAN
+        ]
+        print(
+            f"Iter: {i} | Eval Mean Return: {mean_return:.2f} | Total Env Steps: {total_steps}"
+        )
+
+    elif (
+        ENV_RUNNER_RESULTS in result
+        and EPISODE_RETURN_MEAN in result[ENV_RUNNER_RESULTS]
+    ):
         mean_return = result[ENV_RUNNER_RESULTS][EPISODE_RETURN_MEAN]
-        print(f"Iteration {i}: {mean_return}")
-        
-        # Check if evaluation results are available in the training result
-        if EVALUATION_RESULTS in result:
-            eval_metrics = result[EVALUATION_RESULTS]
-            # Depending on the API, it might be nested or direct
-            if ENV_RUNNER_RESULTS in eval_metrics:
-                eval_return = eval_metrics[ENV_RUNNER_RESULTS][EPISODE_RETURN_MEAN]
-                print(f"Evaluation: {eval_return}")
-            else:
-                # Fallback or just print keys if structure is different
-                # print(f"Evaluation keys: {eval_metrics.keys()}")
-                pass
-            
-        # Save checkpoint every 5 iterations
-        if i % 5 == 0:
-            save_dir = algo.save(checkpoint_dir=finetuning_dir)
-            print(f"Checkpoint saved at {save_dir}")
-            
-        if mean_return > 5000:
-            print("Target reached!")
-            break
-    except KeyError as e:
-        print(f"KeyError accessing metrics: {e}")
-        print(f"Result keys: {result.keys()}")
-        if ENV_RUNNER_RESULTS in result:
-             print(f"Env Runner Results keys: {result[ENV_RUNNER_RESULTS].keys()}")
+        print(
+            f"Iter: {i} | Train Mean Return: {mean_return:.2f} | Total Env Steps: {total_steps}"
+        )
+    else:
+        print(f"Iter: {i} | Metrics not available yet")
+
+    if mean_return is not None and mean_return > 5000:
+        print("Target reached! Stopping.")
         break
+
+    # Save checkpoint occasionally
+    if i % 20 == 0:
+        save_dir = algo.save(checkpoint_dir=finetuning_dir)
+        print(f"Checkpoint saved at {save_dir}")
 
 algo.stop()

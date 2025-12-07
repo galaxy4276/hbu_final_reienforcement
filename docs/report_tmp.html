@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>report.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h1 id="%EA%B0%95%ED%99%94%ED%95%99%EC%8A%B5-%ED%85%80-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8-%EB%B3%B4%EA%B3%A0%EC%84%9C-halfcheetah-v5-expert-policy-%ED%95%99%EC%8A%B5-%EB%B0%8F-offline-rl-%EB%B6%84%EC%84%9D">강화학습 텀 프로젝트 보고서: HalfCheetah-v5 Expert Policy 학습 및 Offline RL 분석</h1>
+<h2 id="1-%EC%84%9C%EB%A1%A0-introduction">1. 서론 (Introduction)</h2>
+<p>연속적인 동작 제어(Continuous Control) 문제는 로보틱스와 자율 주행 등 다양한 실제 응용 분야에서 핵심적인 역할을 합니다. 본 프로젝트는 MuJoCo 물리 엔진 기반의 <strong>HalfCheetah-v5</strong> 환경에서 강화학습 알고리즘을 적용하여 고성능 에이전트(Expert)를 학습시키고, 이를 통해 수집된 데이터를 바탕으로 오프라인 강화학습(Offline RL)의 가능성을 탐구하는 것을 목표로 합니다.</p>
+<p>본 보고서에서는 다음과 같은 세 단계의 파이프라인을 수행한 과정과 결과를 기술합니다:</p>
+<ol>
+<li><strong>Online Expert Training</strong>: PPO(Proximal Policy Optimization) 알고리즘을 사용하여 환경을 마스터하는 Expert 에이전트 학습. 이 과정에서 다양한 하이퍼파라미터 튜닝 가설을 검증하고, 시행착오(Trial &amp; Error)를 통해 최적의 구성을 도출하였습니다.</li>
+<li><strong>Data Collection</strong>: 학습된 Expert 에이전트를 이용하여 양질의 오프라인 데이터셋 구축.</li>
+<li><strong>Offline Learning</strong>: 구축된 데이터셋만을 이용하여 Offline RL(MARWIL/BC) 방식으로 정책을 복원 및 학습.</li>
+</ol>
+<h2 id="2-expert-policy-%ED%95%99%EC%8A%B5-%EB%B0%8F-%EC%8B%A4%ED%97%98-%EB%B6%84%EC%84%9D-online-training">2. Expert Policy 학습 및 실험 분석 (Online Training)</h2>
+<p>Expert 수준의 점수(5000점 이상)를 달성하기 위해 총 12단계의 실험을 진행하였으며, 초기 실패를 극복하고 최종 성공에 이르기까지의 과정을 분석하였습니다.</p>
+<h3 id="21-phase-1-%EB%8C%80%EA%B7%9C%EB%AA%A8-%EB%84%A4%ED%8A%B8%EC%9B%8C%ED%81%AC%EC%99%80-%EB%B0%B0%EC%B9%98-%ED%81%AC%EA%B8%B0-%EC%8B%A4%ED%97%98-large-scale-hypothesis">2.1. Phase 1: 대규모 네트워크와 배치 크기 실험 (Large Scale Hypothesis)</h3>
+<p><strong>실험 설정 (Exp 1~3)</strong>:</p>
+<ul>
+<li><strong>Network</strong>: <code>[1024, 1024]</code> (Wide Network)</li>
+<li><strong>Batch Size</strong>: <code>8192</code> (Large Batch)</li>
+<li><strong>가설</strong>: Google Brain의 연구 결과(&quot;<em>What Matters In On-Policy RL</em>&quot;)에 따라, 네트워크의 너비를 늘리고 배치 크기를 키우면 복잡한 동작을 더 잘 학습할 것이라고 가정했습니다.</li>
+</ul>
+<p><strong>결과 및 실패 분석</strong>:</p>
+<ul>
+<li>초기 학습에서 점수가 상승하다가 **800~1400점대 구간에서 정체(Plateau)**되는 현상이 발생했습니다.</li>
+<li><strong>원인 분석</strong>:
+<ol>
+<li><strong>Local Optima (Suboptimal Locomotion)</strong>: 800~1000점대 점수는 치타가 효율적으로 달리는 것이 아니라, 앞으로 넘어지거나 무릎을 꿇은 채 이동하는 등의 차선책(Suboptimal Policy)에 고착화되었을 가능성이 큽니다.</li>
+<li><strong>Network Over-parameterization</strong>: <code>[1024, 1024]</code>의 거대 네트워크는 <code>8192</code>의 배치 크기로는 학습이 불안정했으며, 초기의 쉬운 보상(넘어지기)에 빠르게 과적합되었습니다.</li>
+</ol>
+</li>
+<li><strong>성능 지표</strong>: 해당 설정에서는 초기 학습 후 약 <strong>1260점</strong> 부근에서 성장이 멈추는 정체(Plateau) 현상을 보였습니다. 이는 에이전트가 더 이상의 개선을 이루지 못하고 국소 최적해에 갇혔음을 시사합니다. (참고: <code>d9bbc</code> 체크포인트)</li>
+</ul>
+<p><img src="file:///home/kimjihun/hbu_final_reienforcement/docs/archive/ppo_v1_mean.png" alt="Phase 1 Mean Reward">
+<em>(Phase 1: 1260점대 Plateau - 평균 보상)</em></p>
+<p><img src="file:///home/kimjihun/hbu_final_reienforcement/docs/archive/ppo_v1_max.png" alt="Phase 1 Max Reward">
+<em>(Phase 1: 최대 보상 추이)</em></p>
+<p><img src="file:///home/kimjihun/hbu_final_reienforcement/docs/archive/ppo_v1_min.png" alt="Phase 1 Min Reward">
+<em>(Phase 1: 최소 보상 추이)</em></p>
+<h3 id="22-phase-2-%ED%83%90%EC%83%89-%EA%B0%95%ED%99%94%EB%A5%BC-%EC%9C%84%ED%95%9C-%EA%B7%9C%EC%A0%9C-%EC%99%84%ED%99%94-unshackled-hypothesis">2.2. Phase 2: 탐색 강화를 위한 규제 완화 (Unshackled Hypothesis)</h3>
+<p><strong>실험 설정 (Exp 4~9)</strong>:</p>
+<ul>
+<li><strong>Entropy Scheduling</strong>: 초기 엔트로피 계수를 높여(<code>0.05</code> → <code>0.0</code>) 강제 탐색 유도.</li>
+<li><strong>KL Penalty 제거 및 Swish 활성화 함수 도입 (Exp 6)</strong>:
+<ul>
+<li><code>use_kl_loss=False</code>: 정책 변화에 대한 제약을 제거하여 과감한 행동 변화 허용.</li>
+<li><code>activation=&quot;swish&quot;</code>: 깊은 신경망에서의 학습 효율 증대.</li>
+</ul>
+</li>
+</ul>
+<p><strong>결과 및 분석</strong>:</p>
+<ul>
+<li>점수가 상승하며 정체 구간을 일부 탈출하였으나, KL 제약 제거로 인해 학습 곡선의 변동성(Variance)이 커져 안정적인 수렴이 어려웠습니다. 즉, 정체 현상은 개선되었으나 <strong>안정적인 고득점 주행 자세</strong>를 확립하는 데에는 한계가 있었습니다.</li>
+</ul>
+<h3 id="23-phase-3-sota-%EC%84%A4%EC%A0%95%EC%9C%BC%EB%A1%9C%EC%9D%98-%ED%9A%8C%EA%B7%80-%EB%B0%8F-%EC%84%B1%EA%B3%B5-success-case">2.3. Phase 3: SOTA 설정으로의 회귀 및 성공 (Success Case)</h3>
+<p><strong>최종 성공 설정 (Exp 10~12, <code>halfcheetah_expert_ppo_v2</code>)</strong>:</p>
+<ul>
+<li><strong>전략 수정</strong>: 무조건적인 &quot;대규모&quot; 설정보다는 안정성을 중시하는 표준 권장 설정(Google Brain &amp; RLlib Baseline)으로 회귀하였습니다.</li>
+<li><strong>주요 파라미터</strong>:</li>
+<li><strong>Network</strong>: <code>[512, 256]</code> (Blue) / <code>[256, 256]</code> (Orange)
+<ul>
+<li><strong>Blue (<code>0b810</code>)</strong>: Google Brain 권장 설정(<code>[512, 256]</code>, Orthogonal Init gain=0.01 등)을 적극 적용하여 최고 점수 도달.</li>
+<li><strong>Orange (<code>f04ec</code>)</strong>: 더 좁은 네트워크(<code>[256, 256]</code>)를 사용하여 가장 안정적인 성능 정체(Plateau) 도달.</li>
+</ul>
+</li>
+<li><strong>Large Batch &amp; Epochs Strategy</strong>:
+<ul>
+<li><strong>Batch Size</strong>: <code>65536</code> (대규모 배치)</li>
+<li><strong>Num Epochs</strong>: <code>32</code></li>
+<li><strong>효과</strong>: Phase 1의 실패 원인(적은 Epochs로 인한 과소적합 또는 불안정)을 해결. 큰 배치로 수집된 데이터를 충분히 반복 학습(<code>32 Epochs</code>)하여, 정책 업데이트의 신뢰성과 효율성을 동시에 확보했습니다.</li>
+</ul>
+</li>
+<li><strong>Entropy Coefficient</strong>: <code>0.0</code> (탐색 강제보다는 자연스러운 수렴 유도)</li>
+</ul>
+<p><strong>최종 결과</strong>:</p>
+<ul>
+<li><strong>성능 분석</strong>: 해당 설정은 평균적으로 <strong>2500~2700점</strong> 내외의 안정적인 성능을 보였으며(Orange), 일부 최적 조건(Blue)에서는 일시적으로 <strong>3000점</strong>을 돌파하기도 하였습니다.</li>
+<li><strong>주요 체크포인트</strong>:
+<ul>
+<li><strong>Blue Line (<code>0b810</code>)</strong>: 최고 점수(Max ~3073)를 기록했으나 후반부 불안정성 노출.</li>
+<li><strong>Orange Line (<code>f04ec</code>)</strong>: 약 <strong>2200~2700점</strong> 구간에서 안정적인 학습 곡선 유지.</li>
+</ul>
+</li>
+<li><strong>달성 의미</strong>: 초기 실패(1260점) 대비 확실한 성능 향상을 이뤘으며, 특히 Orange 모델은 안정적인 주행 정책을 확보했습니다.</li>
+</ul>
+<p><img src="file:///home/kimjihun/hbu_final_reienforcement/docs/archive/ppo_v2_mean.png" alt="Phase 3 Mean Reward">
+<em>(Phase 3: 개선된 모델의 평균 보상 - 2500~3000점 구간 등락)</em></p>
+<p><img src="file:///home/kimjihun/hbu_final_reienforcement/docs/archive/ppo_v2_max.png" alt="Phase 3 Max Reward">
+<em>(Phase 3: 최대 보상 추이 - 순간 최고점 3000 돌파)</em></p>
+<p><img src="file:///home/kimjihun/hbu_final_reienforcement/docs/archive/ppo_v2_min.png" alt="Phase 3 Min Reward">
+<em>(Phase 3: 최소 보상 추이)</em></p>
+<h2 id="3-expert-%EB%8D%B0%EC%9D%B4%ED%84%B0-%EC%88%98%EC%A7%91-data-collection">3. Expert 데이터 수집 (Data Collection)</h2>
+<p>성공적으로 학습된 Expert Policy 중 **안정성이 가장 뛰어난 Orange 모델(<code>f04ec</code>)**을 사용하여 Offline Learning을 위한 데이터셋을 구축하였습니다.</p>
+<ul>
+<li><strong>수집 방법</strong>: <code>orl_2_Record_expert_data_to_local_disk.py</code> 스크립트를 통해 에이전트가 환경과 상호작용하는 Trajectory(State, Action, Reward, Next State)를 <code>.json</code> 또는 <code>.pkl</code> 형태로 저장.</li>
+<li><strong>데이터 품질</strong>: 평균 <strong>2700점</strong> 수준의 준수한 주행 정책(Sub-Expert)에서 추출된 데이터입니다. (5000점 이상의 Super Expert는 아니지만, 1260점의 실패 모델보다는 월등히 우수한 데이터를 제공합니다.)</li>
+</ul>
+<h2 id="4-offline-learning-%EA%B2%B0%EA%B3%BC-behavior-cloning--marwil">4. Offline Learning 결과 (Behavior Cloning / MARWIL)</h2>
+<p>수집된 Expert 데이터를 활용하여, 환경과의 추가적인 상호작용 없이 정책을 학습하는 Offline RL 실험을 수행하였습니다.</p>
+<ul>
+<li><strong>알고리즘</strong>: MARWIL (Monotonic Advantage Re-Weighted Imitation Learning)</li>
+<li><strong>실험 경로</strong>: <code>ray_results/halfcheetah_offline_bc_legacy_pickle</code></li>
+<li><strong>학습 결과 분석</strong>:
+<ul>
+<li><strong>Total Loss</strong>: 학습이 진행됨에 따라 손실(Loss) 값이 <strong>-10.8</strong> 수준으로 안정화되었습니다.</li>
+<li><strong>성능 해석</strong>: 오프라인 학습 특성상 실시간 환경 평가(Online Evaluation) 지표는 기록되지 않았으나(<code>nan</code>), 손실 함수의 꾸준한 감소는 에이전트가 Expert의 행동 분포를 성공적으로 모방(Imitation)하고 있음을 시사합니다.</li>
+</ul>
+</li>
+</ul>
+<p><img src="file:///home/kimjihun/hbu_final_reienforcement/docs/archive/MARWIL_total_loss.png" alt="Offline Learning Loss Stability">
+<em>(그림 2: Offline MARWIL 학습 손실 감소 추이 - 안정적인 수렴을 통해 정책 복원이 이루어짐을 확인)</em></p>
+<h2 id="5-%EA%B2%B0%EB%A1%A0-conclusion">5. 결론 (Conclusion)</h2>
+<p>본 프로젝트를 통해 MuJoCo HalfCheetah-v5 환경에서 강화학습의 전체 파이프라인(Expert 학습 -&gt; 데이터 수집 -&gt; Offline 학습)을 성공적으로 구축하고 검증하였습니다.</p>
+<p><strong>주요 성과</strong>:</p>
+<ol>
+<li><strong>모델 구조와 학습 파라미터의 조화</strong>: 단순히 모델 크기만 줄인 것이 아니라, **초대형 배치(<code>65,536</code>)와 충분한 반복 학습(<code>32 Epochs</code>)**의 조합이 학습 안정성의 핵심이었습니다. 특히 <code>[512, 256]</code> 구조(Blue)는 최고 성능을, <code>[256, 256]</code> 구조(Orange)는 안정적인 수렴을 이끌어냈습니다.</li>
+<li><strong>데이터 기반 학습 가능성</strong>: Expert로부터 수집된 데이터를 통해 오프라인 환경에서도 정책 학습이 가능함을 MARWIL 알고리즘의 Loss 수렴을 통해 확인하였습니다.</li>
+</ol>
+<p>이러한 결과는 자율 주행이나 로봇 제어와 같이 실제 환경에서의 탐색 비용이 높은 분야에서, 시뮬레이션이나 기존 데이터를 활용한 Offline RL의 적용 가능성을 시사합니다.</p>
+
+</body>
+</html>
