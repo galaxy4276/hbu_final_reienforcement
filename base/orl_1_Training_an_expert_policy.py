@@ -7,32 +7,35 @@ from ray.rllib.utils.metrics import (
 )
 from ray import tune
 
+from pathlib import Path
+save_dir = Path("/home/mj/results/hbu_final_reinforcement")
+
 # Configure the PPO algorithm.
 config = (
     PPOConfig()
-    .environment("CartPole-v1")
+    .environment("HalfCheetah-v5")
     .training(
         lr=0.0003,
         # Run 6 SGD minibatch iterations on a batch.
-        num_epochs=6,
+        num_epochs=10,
         # Weigh the value function loss smaller than
         # the policy loss.
-        vf_loss_coeff=0.01,
+        vf_loss_coeff=0.5,
+        train_batch_size=32768,
+        minibatch_size=4096,
     )
     .evaluation(
         evaluation_interval=5,
         evaluation_num_env_runners=1,
-        evaluation_duration=10,
+        evaluation_duration=5,
         evaluation_duration_unit="episodes",
     )
     .rl_module(
         model_config=DefaultModelConfig(
-            fcnet_hiddens=[32],
-            fcnet_activation="linear",
-            # Share encoder layers between value network
-            # and policy.
-            vf_share_layers=True,
-        ),
+            fcnet_hiddens=[256, 256],
+            fcnet_activation="tanh",
+            vf_share_layers=False,
+        )
     )
 )
 
@@ -45,15 +48,14 @@ tuner = tune.Tuner(
     "PPO",
     param_space=config,
     run_config=tune.RunConfig(
-        stop={
-            metric: 450.0,
-        },
-        name="docs_rllib_offline_pretrain_ppo",
-        verbose=2,
+        name="HalfCheetah_expert",
+        storage_path=str(save_dir),
+        stop={metric: 3000},
         checkpoint_config=tune.CheckpointConfig(
-            checkpoint_frequency=1,
+            checkpoint_frequency=5,
             checkpoint_at_end=True,
         ),
+        verbose=2,
     ),
 )
 results = tuner.fit()

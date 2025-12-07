@@ -16,7 +16,7 @@ GYMNASIUM_VERSION="1.2.1"
 MUJOCO_VERSION="3.3.7"
 
 # conda 경로 확인 및 설정
-CONDA_PATH="/opt/anaconda3"
+CONDA_PATH="/home/mj/anaconda3"
 if [ ! -d "$CONDA_PATH" ]; then
     echo "❌ Anaconda가 $CONDA_PATH에 설치되어 있지 않습니다."
     echo "Anaconda 설치 경로를 확인해주세요."
