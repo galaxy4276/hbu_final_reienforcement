@@ -1,0 +1,30 @@
+# AWS SageMaker Atari RL Training Requirements
+# Python 3.10+ recommended
+
+# Core RL Framework
+ray[rllib]==2.50.1
+torch>=2.0.0,<2.4.0
+
+# Atari Environment
+gymnasium[atari]>=1.0.0
+ale-py>=0.9.0
+autorom[accept-rom-license]
+
+# Data Processing
+numpy>=1.24.0
+pandas>=2.0.0
+pyarrow>=12.0.0
+
+# Image Processing
+opencv-python-headless>=4.8.0
+
+# Visualization
+matplotlib>=3.7.0
+
+# AWS Integration
+boto3>=1.28.0
+sagemaker>=2.200.0
+
+# Utilities
+tqdm>=4.65.0
+pyyaml>=6.0
