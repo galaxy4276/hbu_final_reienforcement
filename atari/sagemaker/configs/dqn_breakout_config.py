@@ -2,11 +2,13 @@
 DQN configuration for Atari Breakout-v5 with CNN architecture.
 Includes hyperparameters and training settings for expert policy training.
 Now supports both legacy ModelV2 and new RLModule APIs.
+
+SageMaker compatible version - uses relative imports.
 """
 from ray.rllib.algorithms.dqn import DQNConfig
 from ray.rllib.models.catalog import ModelCatalog
 from ray.rllib.core.rl_module.rl_module import RLModuleSpec
-from atari.utils.cnn_models import (
+from utils.cnn_models import (
     AtariCNN, DuelingAtariCNN,
     get_rl_module_class
 )
@@ -35,7 +37,7 @@ def get_dqn_config(
     gamma: float = 0.99,
     num_steps_sampled_before_learning_starts: int = 50000,
     min_iter_time_s: int = 60,
-    use_new_api_stack: bool = True,  # Default to new RLModule API
+    use_new_api_stack: bool = True,
 ) -> DQNConfig:
     """
     Get DQN configuration for Atari Breakout.
@@ -62,23 +64,21 @@ def get_dqn_config(
     Returns:
         Configured DQNConfig
     """
-    # Default exploration configuration
     if exploration_config is None:
         exploration_config = {
             "type": "EpsilonGreedy",
             "initial_epsilon": 1.0,
             "final_epsilon": 0.01,
-            "epsilon_timesteps": 1000000,  # Decay over 1M steps
+            "epsilon_timesteps": 1000000,
         }
 
     config = (
         DQNConfig()
         .environment(
             env=env_name,
-            # Atari-specific environment configuration
             env_config={
-                "frameskip": 4,  # Frame skipping
-                "repeat_action_probability": 0.25,  # Sticky actions
+                "frameskip": 4,
+                "repeat_action_probability": 0.25,
             },
         )
         .api_stack(
@@ -88,19 +88,16 @@ def get_dqn_config(
     )
 
     if use_new_api_stack:
-        # New RLModule API configuration
         if model_type == "dueling" or use_dueling:
             model_type_for_api = "dueling"
         else:
             model_type_for_api = "cnn"
 
-        # Get the appropriate RLModule class
         rl_module_class = get_rl_module_class(model_type_for_api)
 
         config = config.rl_module(
             rl_module_spec=RLModuleSpec(
                 module_class=rl_module_class,
-                # Observation and action spaces will be set automatically by RLlib
             )
         )
 
@@ -117,7 +114,6 @@ def get_dqn_config(
             }
         )
     else:
-        # Legacy ModelV2 API configuration
         register_custom_models()
 
         if model_type == "dueling" or use_dueling:
@@ -135,9 +131,9 @@ def get_dqn_config(
             model={
                 "custom_model": custom_model,
                 "custom_model_config": model_config,
-                "conv_filters": None,  # Using custom CNN
-                "fcnet_hiddens": None,  # Using custom CNN
-                "post_fcnet_hiddens": None,  # Using custom CNN
+                "conv_filters": None,
+                "fcnet_hiddens": None,
+                "post_fcnet_hiddens": None,
             },
             double_q=double_q,
             dueling=use_dueling,
@@ -162,7 +158,7 @@ def get_dqn_config(
         )
         .framework(framework)
         .offline_data(
-            output_write_episodes=False,  # We'll handle data recording separately
+            output_write_episodes=False,
         )
     )
 
@@ -175,31 +171,22 @@ def get_expert_training_config(
 ) -> dict:
     """
     Get expert training configuration with evaluation setup.
-
-    Args:
-        stop_criteria: Stopping criteria for training
-        evaluation_config: Evaluation configuration
-
-    Returns:
-        Dictionary with training configuration
     """
-    # Default stopping criteria for Breakout
     if stop_criteria is None:
         stop_criteria = {
-            "timesteps_total": 10000000,  # 10M timesteps
-            "evaluation/episode_reward_mean": 300.0,  # Human-level performance
-            "training_iteration": 5000,  # Maximum iterations
+            "timesteps_total": 10000000,
+            "evaluation/episode_reward_mean": 300.0,
+            "training_iteration": 5000,
         }
 
-    # Default evaluation configuration
     if evaluation_config is None:
         evaluation_config = {
-            "evaluation_interval": 20,  # Evaluate every 20 iterations
-            "evaluation_duration": 10,  # 10 episodes per evaluation
+            "evaluation_interval": 20,
+            "evaluation_duration": 10,
             "evaluation_parallel_to_training": True,
             "evaluation_num_workers": 2,
             "evaluation_config": {
-                "explore": False,  # Greedy evaluation
+                "explore": False,
             },
         }
 
@@ -220,38 +207,25 @@ def get_full_config(
     num_gpus: int = 0,
     resume: bool = False,
     checkpoint_path: str = None,
-    use_new_api_stack: bool = True,  # Default to new RLModule API
+    use_new_api_stack: bool = True,
 ) -> tuple:
     """
     Get full DQN configuration for expert training.
-
-    Args:
-        env_name: Environment name
-        model_type: Type of model
-        use_dueling: Whether to use dueling networks
-        num_gpus: Number of GPUs
-        resume: Whether to resume from checkpoint
-        checkpoint_path: Path to checkpoint (if resuming)
-        use_new_api_stack: Whether to use new RLModule API (True) or legacy ModelV2 API (False)
-
-    Returns:
-        Tuple of (config, expert_config, restore_config)
     """
     config = get_dqn_config(
         env_name=env_name,
         model_type=model_type,
         use_dueling=use_dueling,
         num_gpus=num_gpus,
-        num_workers=4,  # Atari needs more workers
-        train_batch_size=32,  # Standard for Atari
-        learning_rate=2.5e-4,  # Standard for Atari
-        buffer_size=1000000,  # Standard replay buffer
+        num_workers=4,
+        train_batch_size=32,
+        learning_rate=2.5e-4,
+        buffer_size=1000000,
         use_new_api_stack=use_new_api_stack,
     )
 
     expert_config = get_expert_training_config()
 
-    # Restore configuration
     restore_config = {}
     if resume and checkpoint_path:
         restore_config["restart"] = True

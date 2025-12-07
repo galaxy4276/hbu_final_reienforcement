@@ -21,6 +21,7 @@ from pathlib import Path
 
 import ray
 import gymnasium as gym
+import ale_py
 from ray.rllib.algorithms.dqn import DQN
 from ray.tune.registry import register_env
 
@@ -44,6 +45,9 @@ def create_atari_env(env_config: dict = None):
     """
     if env_config is None:
         env_config = {}
+
+    # Register ALE environments
+    gym.register_envs(ale_py)
 
     # Create base environment
     env = gym.make("ALE/Breakout-v5", **env_config)
@@ -98,6 +102,8 @@ def main():
     parser.add_argument("--num-gpus", type=int, default=0, help="Number of GPUs to use")
     parser.add_argument("--experiment-name", type=str, default="dqn_breakout_expert",
                        help="Experiment name for TensorBoard")
+    parser.add_argument("--use-legacy-api", action="store_true",
+                       help="Use legacy ModelV2 API instead of new RLModule API")
 
     args = parser.parse_args()
 
@@ -105,12 +111,18 @@ def main():
     if not validate_environment():
         sys.exit(1)
 
+    # Register ALE environments with gymnasium
+    gym.register_envs(ale_py)
+
     # Initialize Ray
     if not ray.is_initialized():
         ray.init()
 
     # Register custom environment
     register_env("atari_breakout", create_atari_env)
+
+    # Determine which API to use
+    use_new_api_stack = not args.use_legacy_api
 
     # Get configuration
     config, expert_config, restore_config = get_full_config(
@@ -120,11 +132,13 @@ def main():
         num_gpus=args.num_gpus,
         resume=args.resume,
         checkpoint_path=args.checkpoint_path,
+        use_new_api_stack=use_new_api_stack,
     )
 
     print("🎮 DQN Expert Training Configuration:")
     print(f"  Environment: ALE/Breakout-v5")
     print(f"  Model Type: {args.model_type}")
+    print(f"  API Stack: {'RLModule (New)' if use_new_api_stack else 'ModelV2 (Legacy)'}")
     print(f"  GPUs: {args.num_gpus}")
     print(f"  Resume: {args.resume}")
     if args.checkpoint_path:
@@ -133,7 +147,7 @@ def main():
     print("\n📊 Training Parameters:")
     print(f"  Train Batch Size: {config.train_batch_size}")
     print(f"  Learning Rate: {config.lr}")
-    print(f"  Buffer Size: {config.buffer_size}")
+    print(f"  Buffer Size: {config.get('replay_buffer_config', {}).get('capacity', 1000000)}")
     print(f"  Target Network Update: {config.target_network_update_freq}")
     print(f"  Double Q-Learning: {config.double_q}")
     print(f"  Dueling Networks: {config.dueling}")
