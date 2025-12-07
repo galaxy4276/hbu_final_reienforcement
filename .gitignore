@@ -1,4 +1,3 @@
 CLAUDE.md
-.claude*
-rules
 .DS_Store
+__pycache__
