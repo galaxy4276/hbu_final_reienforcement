@@ -1,5 +1,31 @@
+# Existing entries
 CLAUDE.md
 .claude*
 rules
 .DS_Store
-/results
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IDE
+.vscode/
+.idea/
+
+# Ray / RLlib
+# ray_results/
+
+# Project specific outputs
+# halfcheetah_expert_ppo/

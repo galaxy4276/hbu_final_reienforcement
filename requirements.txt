@@ -1,18 +1,20 @@
 # 강화학습 환경 요구사항
 # Python 3.12 기준
 
-# 핵심 라이브러리 (버전 엄격히 지정)
+# 핵심 라이브러리
 ray[rllib]==2.50.1
-gymnasium[mujoco]==1.2.1
-mujoco==3.3.7
+gymnasium[mujoco]==1.1.1
+mujoco>=3.3.7
 
 # 딥러닝 프레임워크
-torch
+torch==2.6.0
+torchvision
 
 # 데이터 처리 및 분석
 pandas
 pyarrow
-numpy
+# Numpy 2.0 호환성을 위해 최신 버전 사용 (또는 호환성 문제 시 <2.0.0으로 제한)
+numpy>=1.26.0
 scipy
 
 # 시각화
@@ -29,7 +31,6 @@ tqdm
 wandb
 tensorboard
 
-# 추가 RL 라이브러리 (필요 시)
-# stable-baselines3
-# gymnasium[atari]
-# gymnasium[classic-control]
+# 의존성 충돌 방지를 위한 추가 패키지
+# Numpy 2.0 호환성을 위해 최신 OpenCV 사용
+opencv-python>=4.10.0.84

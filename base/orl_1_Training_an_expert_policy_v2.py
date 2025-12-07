@@ -13,8 +13,13 @@ ray.init(include_dashboard=False, ignore_reinit_error=True)
 
 # ============================================================
 # Configure the PPO algorithm.
-# Ray 공식 튜닝 예제
-# 체크포인트: PPO_HalfCheetah-v5_f04ec_00000_0_2025-12-06_19-33-00
+# Ray 공식 튜닝 예제 기반 + Google Brain 권장사항 적용
+# 체크포인트: PPO_HalfCheetah-v5_0b810_00000_0_2025-12-07_02-21-47
+# ============================================================
+# [주요 변경 파라미터]
+# 1. fcnet_hiddens: [256,256] → [512,256] (너비 튜닝)
+# 2. post_fcnet_weights_initializer: 마지막 레이어 가중치 100배 작게 (gain=0.01)
+# 3. vf_share_layers=False: Policy/Value 네트워크 분리
 # ============================================================
 config = (
     PPOConfig()
@@ -48,10 +53,16 @@ config = (
         gamma=0.99,
         lambda_=0.95,
         model={
-            "fcnet_hiddens": [256, 256],
+            # [Google Brain 권장] 너비 튜닝: 기본값 [256,256]에서 변경
+            "fcnet_hiddens": [512, 256],
             "fcnet_activation": "tanh",
+            # [Google Brain 권장] Policy/Value 네트워크 분리
             "vf_share_layers": False,
             "free_log_std": True,
+            # [Google Brain 권장] 마지막 레이어 가중치 100배 작게 초기화
+            # → 초기 정책이 균등분포에 가까워 탐험 친화적
+            "post_fcnet_weights_initializer": "orthogonal_",
+            "post_fcnet_weights_initializer_config": {"gain": 0.01},
         },
     )
     .evaluation(
