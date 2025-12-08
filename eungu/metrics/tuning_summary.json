@@ -1,0 +1,89 @@
+{
+  "best_config": "label_smooth",
+  "best_reward": 9.666666666666666,
+  "all_results": [
+    {
+      "name": "label_smooth",
+      "config": {
+        "lr": 0.0003,
+        "batch_size": 128,
+        "dropout": 0.3,
+        "scheduler": "cosine",
+        "label_smoothing": 0.1
+      },
+      "best_reward": 9.666666666666666,
+      "max_reward": 30.0,
+      "best_val_acc": 0.4510398613518198,
+      "training_time": 7244.663161754608
+    },
+    {
+      "name": "large_batch",
+      "config": {
+        "lr": 0.0005,
+        "batch_size": 256,
+        "dropout": 0.3,
+        "scheduler": "cosine"
+      },
+      "best_reward": 9.4,
+      "max_reward": 37.0,
+      "best_val_acc": 0.4393414211438475,
+      "training_time": 7322.834557533264
+    },
+    {
+      "name": "onecycle",
+      "config": {
+        "lr": 0.001,
+        "batch_size": 128,
+        "dropout": 0.3,
+        "scheduler": "onecycle"
+      },
+      "best_reward": 9.066666666666666,
+      "max_reward": 38.0,
+      "best_val_acc": 0.43154246100519933,
+      "training_time": 8088.48664355278
+    },
+    {
+      "name": "combined",
+      "config": {
+        "lr": 0.0005,
+        "batch_size": 256,
+        "dropout": 0.2,
+        "scheduler": "cosine",
+        "label_smoothing": 0.1,
+        "grad_clip": 1.0
+      },
+      "best_reward": 8.866666666666667,
+      "max_reward": 26.0,
+      "best_val_acc": 0.43847487001733104,
+      "training_time": 7217.319189786911
+    },
+    {
+      "name": "mixup",
+      "config": {
+        "lr": 0.0003,
+        "batch_size": 128,
+        "dropout": 0.3,
+        "scheduler": "cosine",
+        "mixup": true,
+        "mixup_alpha": 0.2
+      },
+      "best_reward": 7.8,
+      "max_reward": 25.0,
+      "best_val_acc": 0.4532062391681109,
+      "training_time": 8024.45459485054
+    },
+    {
+      "name": "baseline",
+      "config": {
+        "lr": 0.0003,
+        "batch_size": 128,
+        "dropout": 0.3,
+        "scheduler": "cosine"
+      },
+      "best_reward": 6.266666666666667,
+      "max_reward": 19.0,
+      "best_val_acc": 0.4532062391681109,
+      "training_time": 8150.373916149139
+    }
+  ]
+}

@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline RL Final Presentation</title>
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* --- GLOBAL CSS VARIABLES (Dark Mode System) --- */
+        :root {
+            --deep-void: #1a1a2e;
+            --navy-card: #16213e;
+            --neon-coral: #e94560;
+            --tech-teal: #0f4c75;
+            --pure-white: #ffffff;
+            --soft-gray: #b3b3b3;
+            --dark-gray: #666666;
+
+            --success-green: #2ecc71;
+            --warning-yellow: #f1c40f;
+            --info-blue: #3498db;
+            --status-planned: #7f8c8d;
+            --border-light: rgba(255, 255, 255, 0.1);
+
+            --slide-width: 1280px;
+            --slide-height: 720px;
+        }
+
+        /* --- GLOBAL RESET & LAYOUT --- */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Inter', 'Pretendard', sans-serif;
+            overflow: hidden;
+            outline: none;
+        }
+
+        /* Presentation Container */
+        #deck-container {
+            width: var(--slide-width);
+            height: var(--slide-height);
+            position: relative;
+            background-color: var(--deep-void);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            outline: none;
+        }
+
+        /* Common Slide Class */
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+            box-sizing: border-box;
+            background-color: var(--deep-void);
+            z-index: 1;
+            transform: scale(0.98);
+        }
+
+        .slide.active {
+            opacity: 1;
+            pointer-events: all;
+            z-index: 10;
+            transform: scale(1);
+        }
+
+        /* Click Zones */
+        .click-zone {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 15%;
+            z-index: 50;
+            cursor: pointer;
+        }
+        .click-prev { left: 0; }
+        .click-next { right: 0; }
+
+        /* Navigation Controls */
+        .nav-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+            opacity: 0.5;
+            transition: opacity 0.3s;
+            background: rgba(0,0,0,0.5);
+            padding: 8px;
+            border-radius: 8px;
+        }
+        .nav-controls:hover { opacity: 1; }
+        .nav-btn { background: rgba(255,255,255,0.2); color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; transition: background 0.2s; }
+        .nav-btn:hover { background: var(--neon-coral); }
+        .page-indicator { color: var(--pure-white); font-size: 14px; align-self: center; margin: 0 10px; font-weight: 600; }
+
+        /* --- COMMON UTILITIES --- */
+        .header { text-align: center; flex-shrink: 0; margin-bottom: 12px; }
+        .section-title { font-size: 28px; font-weight: 700; color: var(--pure-white); margin: 0; text-transform: uppercase; letter-spacing: -0.02em; }
+        .slide-padding { padding: 20px 40px; display: flex; flex-direction: column; gap: 12px; }
+
+        /* --- SLIDE 1 STYLES (Title) --- */
+        .bg-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; opacity: 0.15; z-index: 0; filter: grayscale(100%) contrast(1.2); }
+        .gradient-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, var(--deep-void) 20%, rgba(233, 69, 96, 0.15) 100%); z-index: 1; pointer-events: none;}
+        .content-layer { position: relative; z-index: 2; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .title-area { text-align: center; display: flex; flex-direction: column; align-items: center; margin-bottom: 80px; width: 90%; }
+        .main-title { font-size: 76px; font-weight: 800; color: var(--pure-white); margin: 0 0 24px; letter-spacing: -0.03em; line-height: 1.1; text-shadow: 0 10px 30px rgba(0,0,0,0.5); word-break: keep-all; }
+        .subtitle { font-size: 30px; font-weight: 400; color: var(--soft-gray); margin: 0; max-width: 85%; line-height: 1.5; opacity: 0.9; }
+        .divider { width: 140px; height: 8px; background-color: var(--neon-coral); margin-top: 50px; border-radius: 4px; box-shadow: 0 0 25px rgba(233, 69, 96, 0.8); }
+        .info-area { position: absolute; bottom: 12%; width: 100%; text-align: center; z-index: 10; }
+        .presenter-box { display: inline-block; background-color: rgba(22, 33, 62, 0.6); padding: 16px 40px; border-radius: 100px; border: 1px solid rgba(255, 255, 255, 0.08); backdrop-filter: blur(8px); box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+        .info-text { color: var(--pure-white); font-size: 20px; font-weight: 500; letter-spacing: 0.02em; }
+
+        /* --- CONTENT SLIDE STYLES --- */
+        .card { background-color: var(--navy-card); border-radius: 16px; padding: 24px; border: 1px solid rgba(255, 255, 255, 0.05); display: flex; flex-direction: column; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+        .card-header { font-size: 20px; font-weight: 600; color: var(--pure-white); margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+        .card-header i { color: var(--tech-teal); }
+        .card-body { font-size: 16px; color: var(--soft-gray); line-height: 1.8; }
+        .chart-container { flex: 1; display: flex; flex-direction: column; }
+        .chart-frame { flex-grow: 1; background-color: var(--navy-card); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.05); padding: 20px; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        .chart-img { width: 100%; height: 100%; object-fit: contain; }
+        .chart-caption { margin-top: 12px; text-align: center; color: var(--soft-gray); font-size: 14px; font-weight: 500; }
+        .chart-caption i { color: var(--tech-teal); margin-right: 6px; }
+
+        .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        .grid-3col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+
+        .metric-box { background-color: rgba(255, 255, 255, 0.03); border-radius: 12px; padding: 20px; border-left: 3px solid var(--neon-coral); }
+        .metric-value { font-size: 42px; font-weight: 800; color: var(--neon-coral); line-height: 1; margin-bottom: 8px; display: block; }
+        .metric-label { font-size: 15px; color: var(--soft-gray); font-weight: 500; }
+
+        .badge { background-color: var(--tech-teal); color: white; padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; margin-left: 8px; }
+        .highlight-box { background: linear-gradient(90deg, rgba(233, 69, 96, 0.1), transparent); border-left: 4px solid var(--neon-coral); padding: 16px 24px; border-radius: 0 8px 8px 0; margin-top: 20px; }
+        .highlight-text { font-size: 16px; color: var(--pure-white); font-weight: 500; }
+
+        ul.bullet-list { list-style: none; padding: 0; margin: 0; }
+        ul.bullet-list li { font-size: 16px; color: var(--soft-gray); margin-bottom: 12px; padding-left: 24px; position: relative; }
+        ul.bullet-list li:before { content: '▸'; position: absolute; left: 0; color: var(--neon-coral); font-weight: bold; }
+
+    </style>
+</head>
+<body tabindex="0">
+
+    <div id="deck-container">
+
+        <!-- Navigation Click Zones -->
+        <div class="click-zone click-prev" onclick="prevSlide()"></div>
+        <div class="click-zone click-next" onclick="nextSlide()"></div>
+
+        <!-- SLIDE 1: TITLE -->
+        <div class="slide active" id="slide-1">
+            <div class="gradient-overlay"></div>
+            <div class="content-layer">
+                <div class="title-area">
+                    <h1 class="main-title">다중 환경 오프라인 강화학습<br>비교 연구</h1>
+                    <p class="subtitle">Ray RLlib 기반 3가지 환경별 구현 사례</p>
+                    <div class="divider"></div>
+                </div>
+                <div class="info-area">
+                    <div class="presenter-box">
+                        <span class="info-text">컴퓨터공학과 김만종, 김지훈, 최은기</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: 김만종 - Overview -->
+        <div class="slide slide-padding" id="slide-2">
+            <div class="header">
+                <h2 class="section-title"><i class="fa-solid fa-user"></i> 김만종: HalfCheetah 오프라인 RL 비교 연구</h2>
+            </div>
+
+            <div class="grid-2col" style="height: 500px;margin-bottom: 60px;">
+                <div class="card">
+                    <div class="card-header"><i class="fa-solid fa-flask"></i> 실험 개요</div>
+                    <div class="card-body">
+                        <p><strong>환경:</strong> HalfCheetah-v5 (MuJoCo)</p>
+                        <p><strong>전문가 모델:</strong> PPO로 학습 (~3,800점)</p>
+                        <p><strong>데이터셋:</strong></p>
+                        <ul class="bullet-list">
+                            <li>Small: 50 episodes</li>
+                            <li>Large: 500 episodes</li>
+                        </ul>
+                        <p><strong>비교 알고리즘:</strong></p>
+                        <ul class="bullet-list">
+                            <li><strong>BC</strong>: Behavior Cloning (단순 모방)</li>
+                            <li><strong>CQL</strong>: Conservative Q-Learning</li>
+                            <li><strong>MARWIL</strong>: Advantage 기반 학습</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header"><i class="fa-solid fa-lightbulb"></i> 핵심 발견</div>
+                    <div class="card-body">
+                        <div class="metric-box" style="margin-bottom: 20px;">
+                            <span class="metric-value">10x</span>
+                            <span class="metric-label">데이터 양 증가 시 성능 향상</span>
+                        </div>
+                        <ul class="bullet-list">
+                            <li><strong>데이터 양이 결정적:</strong> 50 Ep → 1,500점, 500 Ep → 3,400점</li>
+                            <li><strong>MARWIL 우수성:</strong> 가장 빠른 수렴 & 최고 성능 (3,400+점)</li>
+                            <li><strong>CQL 실패:</strong> 소량 데이터(50 Ep)에서 학습 붕괴</li>
+                            <li><strong>Learning Rate:</strong> 1e-4가 5e-5보다 빠른 수렴</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: 김만종 - Results -->
+        <div class="slide slide-padding" id="slide-3">
+            <div class="header">
+                <h2 class="section-title"><i class="fa-solid fa-chart-line"></i> 김만종: 실험 결과 시각화</h2>
+            </div>
+
+            <div class="grid-2col" style="height: 215px; margin-bottom: 8px; column-gap: 50px;">
+                <div class="chart-container">
+                    <div class="chart-frame" style="padding: 8px;">
+                        <img src="mj/images/mj_result_1.png" alt="Data Quantity Comparison" class="chart-img">
+                    </div>
+                    <div class="chart-caption" style="font-size: 10px; margin-top: 5px;"><i class="fa-solid fa-database"></i> 데이터 양에 따른 성능 차이 (50 vs 500 Ep)</div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-frame" style="padding: 8px;">
+                        <img src="mj/images/mj_result_2.png" alt="Algorithm Comparison" class="chart-img">
+                    </div>
+                    <div class="chart-caption" style="font-size: 10px; margin-top: 5px;"><i class="fa-solid fa-code-compare"></i> 알고리즘 비교 (BC vs CQL vs MARWIL)</div>
+                </div>
+            </div>
+
+            <div class="grid-2col" style="height: 215px; margin-bottom: 8px; column-gap: 50px;">
+                <div class="chart-container">
+                    <div class="chart-frame" style="padding: 8px;">
+                        <img src="mj/images/mj_result_3.png" alt="MARWIL Hyperparameters" class="chart-img">
+                    </div>
+                    <div class="chart-caption" style="font-size: 10px; margin-top: 5px;"><i class="fa-solid fa-sliders"></i> MARWIL 하이퍼파라미터 비교 (LR 1e-4 vs 5e-5)</div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-frame" style="padding: 8px;">
+                        <img src="mj/images/mj_result_4.png" alt="Overall Performance" class="chart-img">
+                    </div>
+                    <div class="chart-caption" style="font-size: 10px; margin-top: 5px;"><i class="fa-solid fa-trophy"></i> 전체 실험 성능 종합 비교</div>
+                </div>
+            </div>
+
+            <div class="highlight-box" style="margin-top: 60px; padding: 12px 20px;">
+                <span class="highlight-text" style="font-size: 14px;"><i class="fa-solid fa-star"></i> <strong>최종 권장:</strong> MARWIL (beta=1.0, lr=1e-4) + 500 Ep 이상 데이터 → 전문가 대비 89% 성능 달성</span>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: 김지훈 - Overview -->
+        <div class="slide slide-padding" id="slide-4">
+            <div class="header">
+                <h2 class="section-title"><i class="fa-solid fa-user"></i> 김지훈: HalfCheetah Expert Policy 학습</h2>
+            </div>
+
+            <div class="grid-2col" style="height: 520px;">
+                <div class="card">
+                    <div class="card-header"><i class="fa-solid fa-route"></i> 12단계 실험 여정</div>
+                    <div class="card-body">
+                        <p><strong>Phase 1: 대규모 네트워크 (실패)</strong></p>
+                        <ul class="bullet-list">
+                            <li>Network: [1024, 1024], Batch: 8192</li>
+                            <li>결과: 1260점 Plateau (Local Optima 고착)</li>
+                        </ul>
+
+                        <p><strong>Phase 2: 탐색 강화 (불안정)</strong></p>
+                        <ul class="bullet-list">
+                            <li>Entropy Scheduling, KL Penalty 제거</li>
+                            <li>결과: 정체 탈출했으나 변동성 증가</li>
+                        </ul>
+
+                        <p><strong>Phase 3: SOTA 설정 (성공)</strong><span class="badge">Best</span></p>
+                        <ul class="bullet-list">
+                            <li>Network: [512, 256] / [256, 256]</li>
+                            <li>Batch: 65536, Epochs: 32</li>
+                            <li>결과: <strong>최고 3073점, 안정 2700점</strong></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header"><i class="fa-solid fa-brain"></i> 핵심 통찰</div>
+                    <div class="card-body">
+                        <div class="metric-box" style="margin-bottom: 20px;">
+                            <span class="metric-value">2.4x</span>
+                            <span class="metric-label">Phase 1 대비 최종 성능 향상</span>
+                        </div>
+                        <ul class="bullet-list">
+                            <li><strong>Network Size:</strong> 작은 네트워크가 오히려 안정적 (과적합 방지)</li>
+                            <li><strong>Batch & Epochs:</strong> 큰 배치(65K) + 충분한 반복(32)이 핵심</li>
+                            <li><strong>Exploration:</strong> 무분별한 탐색보다 안정적 수렴이 중요</li>
+                            <li><strong>시행착오:</strong> 12번의 실험을 통해 최적 설정 도출</li>
+                        </ul>
+
+                        <div class="highlight-box" style="margin-top: 20px;">
+                            <span class="highlight-text"><strong>Google Brain 권장 설정</strong>으로 회귀한 것이 성공 요인</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: 김지훈 - Results -->
+        <div class="slide slide-padding" id="slide-5">
+            <div class="header">
+                <h2 class="section-title"><i class="fa-solid fa-chart-area"></i> 김지훈: 학습 곡선 분석</h2>
+            </div>
+
+            <!-- Top Row: 2 charts -->
+            <div class="grid-2col" style="height: 250px; margin-bottom: 10px; column-gap: 50px;">
+                <div class="chart-container">
+                    <div class="chart-frame" style="padding: 10px;">
+                        <img src="gh/images/gh_phase_comparison.png" alt="Phase Comparison" class="chart-img">
+                    </div>
+                    <div class="chart-caption" style="font-size: 11px; margin-top: 6px;"><i class="fa-solid fa-layer-group"></i> Phase 1 vs Phase 3: Plateau 극복 과정</div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-frame" style="padding: 10px;">
+                        <img src="gh/images/gh_hyperparameter_impact.png" alt="Hyperparameter Impact" class="chart-img">
+                    </div>
+                    <div class="chart-caption" style="font-size: 11px; margin-top: 6px;"><i class="fa-solid fa-wrench"></i> 하이퍼파라미터가 성능 & 안정성에 미치는 영향</div>
+                </div>
+            </div>
+
+            <!-- Bottom Row: 2 charts -->
+            <div class="grid-2col" style="height: 250px; column-gap: 50px;">
+                <div class="chart-container">
+                    <div class="chart-frame" style="padding: 10px;">
+                        <img src="gh/images/gh_experiments_timeline.png" alt="12 Experiments Timeline" class="chart-img">
+                    </div>
+                    <div class="chart-caption" style="font-size: 11px; margin-top: 6px;"><i class="fa-solid fa-timeline"></i> 12개 실험의 점진적 성능 향상 과정</div>
+                </div>
+                <div class="card" style="padding: 20px; display: flex; flex-direction: column; justify-content: center;">
+                    <div class="metric-box" style="margin-bottom: 16px;">
+                        <span class="metric-value" style="font-size: 48px;">2.4x</span>
+                        <span class="metric-label">Phase 1 대비 성능 향상</span>
+                    </div>
+                    <div style="font-size: 13px; line-height: 1.5;">
+                        <p style="margin: 0 0 8px;"><strong style="color: var(--neon-coral);">핵심 성공 요인:</strong></p>
+                        <ul class="bullet-list" style="margin: 0; font-size: 12px;">
+                            <li style="margin-bottom: 4px;">큰 배치(65K) + 충분한 반복(32)</li>
+                            <li style="margin-bottom: 4px;">작은 네트워크가 안정적</li>
+                            <li>12단계 시행착오 학습</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: 최은기 - Overview -->
+        <div class="slide slide-padding" id="slide-6">
+            <div class="header">
+                <h2 class="section-title"><i class="fa-solid fa-user"></i> 최은기: Atari Breakout BC/IQL 학습</h2>
+            </div>
+
+            <div class="grid-2col" style="height: 550px;">
+                <div class="card" style="padding: 20px;">
+                    <div class="card-header" style="margin-bottom: 12px;"><i class="fa-solid fa-gamepad"></i> 실험 개요</div>
+                    <div class="card-body" style="font-size: 14px; line-height: 1.6;">
+                        <p style="margin: 6px 0;"><strong>환경:</strong> ALE/Breakout-v5 (시각 입력)</p>
+                        <p style="margin: 10px 0 6px;"><strong>실험 카테고리:</strong></p>
+
+                        <p style="margin: 8px 0 4px;"><strong>1. BC Augmentation</strong></p>
+                        <ul class="bullet-list" style="margin: 0;">
+                            <li style="margin-bottom: 6px;">Baseline (No Aug)</li>
+                            <li style="margin-bottom: 6px;">Shift Augmentation</li>
+                            <li style="margin-bottom: 6px;">Noise Augmentation</li>
+                            <li style="margin-bottom: 6px;">All Augmentations</li>
+                        </ul>
+
+                        <p style="margin: 10px 0 4px;"><strong>2. IQL Hyperparameter Tuning</strong></p>
+                        <ul class="bullet-list" style="margin: 0;">
+                            <li style="margin-bottom: 6px;">Beta: 10, 15, 20</li>
+                            <li style="margin-bottom: 6px;">Tau: 0.7 (default), 0.8 (tuned)</li>
+                        </ul>
+
+                        <p style="margin: 10px 0 4px;"><strong>3. Advanced Techniques</strong></p>
+                        <ul class="bullet-list" style="margin: 0;">
+                            <li style="margin-bottom: 6px;">Label Smoothing, Mixup, Large Batch</li>
+                            <li style="margin-bottom: 6px;">OneCycle LR, Combined</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card" style="padding: 20px;">
+                    <div class="card-header" style="margin-bottom: 12px;"><i class="fa-solid fa-medal"></i> 주요 성과</div>
+                    <div class="card-body" style="font-size: 14px; line-height: 1.6;">
+                        <div class="metric-box" style="margin-bottom: 16px;">
+                            <span class="metric-value">195</span>
+                            <span class="metric-label">최고 Reward (BC + All Aug)</span>
+                        </div>
+
+                        <ul class="bullet-list" style="margin: 0;">
+                            <li style="margin-bottom: 8px;"><strong>Data Augmentation 효과:</strong> Baseline 160 → All Aug 195 (22% ↑)</li>
+                            <li style="margin-bottom: 8px;"><strong>IQL Best Config:</strong> Beta=10, Tau=0.8 (180점)</li>
+                            <li style="margin-bottom: 8px;"><strong>시각 환경 도전:</strong> 고차원 입력으로 학습 불안정성 증가</li>
+                            <li style="margin-bottom: 8px;"><strong>Sample Efficiency:</strong> BC가 IQL/CQL보다 빠른 수렴</li>
+                        </ul>
+
+                        <div class="highlight-box" style="margin-top: 16px; padding: 12px 20px;">
+                            <span class="highlight-text" style="font-size: 14px;"><strong>시각 환경에서는 Data Augmentation이 필수적</strong></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: 최은기 - Results -->
+        <div class="slide slide-padding" id="slide-7">
+            <div class="header">
+                <h2 class="section-title"><i class="fa-solid fa-rocket"></i> 최은기: Atari 실험 결과</h2>
+            </div>
+
+            <!-- Top Row: 2 charts -->
+            <div class="grid-2col" style="height: 250px; margin-bottom: 10px;">
+                <div class="chart-container">
+                    <div class="chart-frame" style="padding: 10px;">
+                        <img src="eungu/images/eungu_bc_augmentation.png" alt="BC Augmentation" class="chart-img">
+                    </div>
+                    <div class="chart-caption" style="font-size: 11px; margin-top: 6px;"><i class="fa-solid fa-images"></i> BC with Data Augmentation: 성능 향상 효과</div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-frame" style="padding: 10px;">
+                        <img src="eungu/images/eungu_iql_tuning.png" alt="IQL Tuning" class="chart-img">
+                    </div>
+                    <div class="chart-caption" style="font-size: 11px; margin-top: 6px;"><i class="fa-solid fa-gears"></i> IQL 하이퍼파라미터 튜닝 결과</div>
+                </div>
+            </div>
+
+            <!-- Bottom Row: 2 charts -->
+            <div class="grid-2col" style="height: 250px;">
+                <div class="chart-container">
+                    <div class="chart-frame" style="padding: 10px;">
+                        <img src="eungu/images/eungu_algorithm_comparison.png" alt="Algorithm Comparison" class="chart-img">
+                    </div>
+                    <div class="chart-caption" style="font-size: 11px; margin-top: 6px;"><i class="fa-solid fa-ranking-star"></i> 전체 알고리즘 성능 & 효율성 비교</div>
+                </div>
+                <div class="card" style="padding: 20px; display: flex; flex-direction: column; justify-content: center;">
+                    <div class="metric-box" style="margin-bottom: 16px;">
+                        <span class="metric-value" style="font-size: 48px;">22%</span>
+                        <span class="metric-label">Augmentation 성능 향상</span>
+                    </div>
+                    <div style="font-size: 13px; line-height: 1.5;">
+                        <p style="margin: 0 0 8px;"><strong style="color: var(--neon-coral);">핵심 결론:</strong></p>
+                        <ul class="bullet-list" style="margin: 0; font-size: 12px;">
+                            <li style="margin-bottom: 4px;">BC + Augmentation 최적</li>
+                            <li style="margin-bottom: 4px;">시각 환경 특화 필수</li>
+                            <li>Sample Efficiency 우수</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: Conclusion -->
+        <div class="slide slide-padding" id="slide-8">
+            <div class="header">
+                <h2 class="section-title"><i class="fa-solid fa-flag-checkered"></i> 종합 결론 및 시사점</h2>
+            </div>
+
+            <div class="grid-3col" style="height: 170px; margin-bottom: 20px;">
+                <div class="card">
+                    <div class="card-header"><i class="fa-solid fa-user"></i> 김만종</div>
+                    <div class="card-body" style="font-size: 13px;">
+                        <div class="metric-box" style="margin-bottom: 10px;">
+                            <span class="metric-value" style="font-size: 28px;">3,400</span>
+                            <span class="metric-label" style="font-size: 12px;">HalfCheetah 최고 점수</span>
+                        </div>
+                        <ul class="bullet-list" style="margin: 0; font-size: 12px;">
+                            <li style="margin-bottom: 4px;"><strong>MARWIL</strong> 알고리즘 우수</li>
+                            <li style="margin-bottom: 4px;">데이터 양이 결정적 요인</li>
+                            <li style="margin-bottom: 4px;">전문가 대비 89% 달성</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header"><i class="fa-solid fa-user"></i> 김지훈</div>
+                    <div class="card-body" style="font-size: 13px;">
+                        <div class="metric-box" style="margin-bottom: 10px;">
+                            <span class="metric-value" style="font-size: 28px;">2.4x</span>
+                            <span class="metric-label" style="font-size: 12px;">Phase 1 대비 성능 향상</span>
+                        </div>
+                        <ul class="bullet-list" style="margin: 0; font-size: 12px;">
+                            <li style="margin-bottom: 4px;">12단계 시행착오 과정</li>
+                            <li style="margin-bottom: 4px;">큰 배치 + 충분한 반복</li>
+                            <li style="margin-bottom: 4px;">작은 네트워크가 안정적</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header"><i class="fa-solid fa-user"></i> 최은기</div>
+                    <div class="card-body" style="font-size: 13px;">
+                        <div class="metric-box" style="margin-bottom: 10px;">
+                            <span class="metric-value" style="font-size: 28px;">22%</span>
+                            <span class="metric-label" style="font-size: 12px;">Augmentation 효과</span>
+                        </div>
+                        <ul class="bullet-list" style="margin: 0; font-size: 12px;">
+                            <li style="margin-bottom: 4px;">시각 환경 특화 연구</li>
+                            <li style="margin-bottom: 4px;">Data Augmentation 필수</li>
+                            <li style="margin-bottom: 4px;">BC가 가장 효율적</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="height: 240px; margin-top: 110px;">
+                <div class="card-header"><i class="fa-solid fa-lightbulb"></i> 핵심 교훈 및 향후 방향</div>
+                <div class="card-body">
+                    <div class="grid-2col">
+                        <div>
+                            <p style="margin-top: 0;"><strong style="color: var(--neon-coral); font-size: 16px;">오프라인 강화학습 성공 요인</strong></p>
+                            <ul class="bullet-list">
+                                <li><strong>데이터 품질 > 알고리즘:</strong> 충분한 양의 고품질 전문가 데이터가 필수</li>
+                                <li><strong>환경별 최적화:</strong> MuJoCo는 MARWIL, Atari는 BC + Augmentation</li>
+                                <li><strong>하이퍼파라미터 튜닝:</strong> 체계적 실험을 통한 최적 설정 도출</li>
+                                <li><strong>안정성 우선:</strong> 과도한 탐색보다 안정적 수렴이 중요</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <p style="margin-top: 0;"><strong style="color: var(--tech-teal); font-size: 16px;">향후 연구 방향</strong></p>
+                            <ul class="bullet-list">
+                                <li><strong>온라인 Fine-tuning:</strong> 오프라인 사전학습 후 온라인 개선</li>
+                                <li><strong>Model-based RL:</strong> 샘플 효율성 극대화</li>
+                                <li><strong>Multi-task Learning:</strong> 여러 환경에서 일반화</li>
+                                <li><strong>Real-world 적용:</strong> 로봇공학, 자율주행 등</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Controls -->
+        <div class="nav-controls">
+            <span class="page-indicator" id="page-indicator">1 / 8</span>
+            <button class="nav-btn" onclick="prevSlide()"><i class="fa-solid fa-chevron-left"></i></button>
+            <button class="nav-btn" onclick="nextSlide()"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+
+    </div>
+
+    <script>
+        // Presentation Control Logic
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const indicator = document.getElementById('page-indicator');
+        const totalSlides = slides.length;
+
+        function updateSlide() {
+            slides.forEach((slide, i) => {
+                slide.classList.remove('active');
+                if (i === currentSlide) {
+                    slide.classList.add('active');
+                }
+            });
+            indicator.innerText = `${currentSlide + 1} / ${totalSlides}`;
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                updateSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlide();
+            }
+        }
+
+        // Auto Focus for Keyboard Navigation
+        window.onload = function() {
+            document.body.focus();
+        };
+
+        // Keyboard Events
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                prevSlide();
+            }
+        });
+
+        // Initialize
+        updateSlide();
+    </script>
+
+</body>
+</html>
