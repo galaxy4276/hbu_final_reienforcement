@@ -1,0 +1,30 @@
+[
+  {
+    "name": "baseline",
+    "aug_type": "none",
+    "best_reward": 0.0,
+    "final_val_acc": 0.693,
+    "training_time": 47.430818768342334
+  },
+  {
+    "name": "shift",
+    "aug_type": "shift",
+    "best_reward": 0.0,
+    "final_val_acc": 0.691,
+    "training_time": 42.69848617712657
+  },
+  {
+    "name": "noise",
+    "aug_type": "noise",
+    "best_reward": 0.0,
+    "final_val_acc": 0.697,
+    "training_time": 46.54777182340622
+  },
+  {
+    "name": "all_aug",
+    "aug_type": "all",
+    "best_reward": 0.0,
+    "final_val_acc": 0.68,
+    "training_time": 48.04820428689321
+  }
+]

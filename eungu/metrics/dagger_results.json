@@ -1,0 +1,20 @@
+[
+  {
+    "iteration": 1,
+    "beta": 0.9,
+    "dataset_size": 81587,
+    "mean_reward": 0.0,
+    "max_reward": 0.0,
+    "loss": 0.09029983265736305,
+    "acc": 0.9723117653547747
+  },
+  {
+    "iteration": 2,
+    "beta": 0.5,
+    "dataset_size": 135559,
+    "mean_reward": 0.0,
+    "max_reward": 0.0,
+    "loss": 0.04371670455488919,
+    "acc": 0.9851208698795358
+  }
+]

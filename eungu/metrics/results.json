@@ -1,0 +1,59 @@
+{
+  "config": {
+    "num_episodes": 5,
+    "batch_size": 32,
+    "lr": 0.0001,
+    "alpha": 1.5,
+    "epochs": 50,
+    "eval_interval": 10
+  },
+  "expert_mean_reward": 7.0,
+  "cql_best_reward": 0.0,
+  "cql_eval": {
+    "mean": 0.0,
+    "std": 0.0,
+    "max": 0.0,
+    "min": 0.0
+  },
+  "bc_eval": {
+    "mean": 2.6,
+    "max": 7.0
+  },
+  "training_results": [
+    {
+      "epoch": 10,
+      "td_loss": 0.2352299188980148,
+      "cql_loss": 0.0987105237560389,
+      "mean_reward": 0.0,
+      "max_reward": 0.0
+    },
+    {
+      "epoch": 20,
+      "td_loss": 0.20796676824633215,
+      "cql_loss": 0.06877286478674689,
+      "mean_reward": 0.0,
+      "max_reward": 0.0
+    },
+    {
+      "epoch": 30,
+      "td_loss": 0.18481537880589977,
+      "cql_loss": 0.05653222974093924,
+      "mean_reward": 0.0,
+      "max_reward": 0.0
+    },
+    {
+      "epoch": 40,
+      "td_loss": 0.18932069470469173,
+      "cql_loss": 0.04827223312530962,
+      "mean_reward": 0.0,
+      "max_reward": 0.0
+    },
+    {
+      "epoch": 50,
+      "td_loss": 0.2088916170368226,
+      "cql_loss": 0.04302656013933226,
+      "mean_reward": 0.0,
+      "max_reward": 0.0
+    }
+  ]
+}
