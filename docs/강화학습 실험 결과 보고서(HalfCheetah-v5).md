@@ -34,7 +34,7 @@ Expert 수준의 에이전트를 생성하기 위해 **PPO(Proximal Policy Optim
 
 **실험 요약표:**
 _(실험의 상세 파라미터 및 성능/효율성 지표)_
-![[images/comprehensive_experiment_log.png]]
+![comprehensive_experiment_log](./images/comprehensive_experiment_log.png)
 
 #### 2.2.1. 오프라인 데이터셋 구축
 
@@ -82,11 +82,11 @@ _(실험의 상세 파라미터 및 성능/효율성 지표)_
 - **성능 지표**: 해당 설정에서는 초기 학습 후 약 **1260점** 부근에서 성장이 멈추는 정체(Plateau) 현상을 보였습니다. 이는 에이전트가 더 이상의 개선을 이루지 못하고 국소 최적해에 갇혔음을 시사합니다. (참고: `d9bbc` 체크포인트)
 
 - _(Large Scale: 평균 보상 추이)_
-  ![[images/ppo_v1_mean.png]]
+  ![ppo_v1_mean](./images/ppo_v1_mean.png)
 - _(Large Scale: 최대 보상 추이)_
-  ![[images/ppo_v1_max.png]]
+  ![ppo_v1_max](./images/ppo_v1_max.png)
 - _(Large Scale: 최소 보상 추이)_
-  ![[images/ppo_v1_min.png]]
+  ![ppo_v1_min](./images/ppo_v1_min.png)
 
 #### 3.1.2. 활성화 함수 변경 및 경량화 (Activation & Efficiency)
 
@@ -100,28 +100,28 @@ _(실험의 상세 파라미터 및 성능/효율성 지표)_
 - **달성 의미**: 초기 실패(1260점) 대비 확실한 성능 향상을 이뤘으며, 특히 Black 모델은 안정적인 주행 정책을 확보했습니다.
 
 - _(Optimized SOTA: 평균 보상 추이)_
-  ![[images/ppo_v2_mean.png]]
+  ![ppo_v2_mean](./images/ppo_v2_mean.png)
 - _(Optimized SOTA: 최대 보상 추이)_
-  ![[images/ppo_v2_max.png]]
+  ![ppo_v2_max](./images/ppo_v2_max.png)
 - _(Optimized SOTA: 최소 보상 추이)_
-  ![[images/ppo_v2_min.png]]
+  ![ppo_v2_min](./images/ppo_v2_min.png)
 
 #### 3.1.4. 최종 모델 분석 (Analysis)
 
 - 네트워크 깊이를 `[512, 512, 256]`으로 늘리고 배치(`8192`)와 에포크(`20`)를 최적화한 결과, 국소 최적해를 돌파하였습니다.
 - 최종적으로 **약 3,800점**의 보상을 기록하며 본 프로젝트의 Expert 모델 기준을 충족했습니다.
-- ![[images/final_expert_ppo.png]]
+- ![final_expert_ppo](./images/final_expert_ppo.png)
 
 ### 3.2. 오프라인 강화학습 결과
 
 #### 3.2.1. 전체 그래프 비교
 
-![[images/offline_all.png]]
+![offline_all](./images/offline_all.png)
 
 #### 3.2.2. 데이터 양에 따른 성능 비교 (Small Data vs Large Data)
 
 데이터의 양이 학습의 안정성과 최종 성능에 결정적인 영향을 미침을 확인했습니다.
-![[images/offline_data.png]]
+![offline_data](./images/offline_data.png)
 
 | 실험 ID   | 알고리즘 | 데이터 양 | 결과 (그래프 색상)  | 분석                                                                                                           |
 | :-------- | :------- | :-------- | :------------------ | :------------------------------------------------------------------------------------------------------------- |
@@ -131,7 +131,7 @@ _(실험의 상세 파라미터 및 성능/효율성 지표)_
 #### 3.2.3 알고리즘 성능 비교 (BC vs CQL vs MARWIL)
 
 오프라인 데이터 50개를 기준으로 실험을 진행했습니다.
-![[images/offline_alg.png]]
+![offline_alg](./images/offline_alg.png)
 
 - **Behavioral Cloning (BC - `a0a60`):**
   - **결과:** 회색 라인. 초기에는 점수가 낮으나 스텝이 진행됨에 따라 **선형적(Linear)으로 꾸준히 성능이 향상**되었습니다.
@@ -145,7 +145,7 @@ _(실험의 상세 파라미터 및 성능/효율성 지표)_
 
 #### 3.2.4. MARWIL 하이퍼파라미터(Learning Rate) 비교
 
-![[images/offline_marwil.png]]
+![offline_marwil](./images/offline_marwil.png)
 
 - **Case A (`15ebd`):** `lr=1e-4` (분홍색)
   ```
@@ -176,7 +176,7 @@ _(실험의 상세 파라미터 및 성능/효율성 지표)_
 
 ##### 초기 성능 하락 (Performance Collapse)
 
-![[images/finetune_1.png]]
+![finetune_1](./images/finetune_1.png)
 
 - BC 모델 로드 직후 수행한 PRE-EVAL 및 초기 학습(Iter 001~010)에서 점수가 -300점 대로 급락함
 - **원인 분석:**
@@ -185,7 +185,7 @@ _(실험의 상세 파라미터 및 성능/효율성 지표)_
 
 ##### 성능 회복 및 초과 달성 (Recovery & Improvement)
 
-![[images/finetune_2.png]]
+![finetune_2](./images/finetune_2.png)
 
 - 학습이 진행됨에 따라 성능이 빠르게 회복되었으며, 500 Iteration 시점에서 놀라운 성능 향상을 보임
 - **최종 학습 점수: 4,117.936**
