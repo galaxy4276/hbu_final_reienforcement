@@ -14,7 +14,11 @@ Expert 수준의 에이전트를 생성하기 위해 **PPO(Proximal Policy Optim
 
 - **Phase 1 (Large Scale):** "네트워크와 배치 크기가 클수록 복잡한 동작을 잘 학습할 것이다"라는 가설 하에 네트워크를 `[1024, 1024]`로, 배치 크기를 `8192`로 설정하였습니다.
 - **Phase 2 (Activation & Efficiency):** 기존 `tanh` 활성화 함수의 한계를 극복하기 위해 `relu` 함수를 도입하고, 과도한 네트워크 크기(`[1024, 1024]`)를 `[256, 256]` 등으로 경량화하여 학습 효율성과 안정성을 테스트하였습니다.
-- **Phase 3 (Optimized SOTA):** 안정성을 중시하는 표준 권장 설정(Google Brain & RLlib Baseline)을 기반으로 네트워크 깊이를 늘리고 학습 반복 횟수를 조정한 설정입니다..
+- **Phase 3 (Optimized SOTA):** 안정성을 중시하는 표준 권장 설정(Google Brain & RLlib Baseline)을 기반으로 네트워크 깊이를 늘리고 학습 반복 횟수를 조정한 설정입니다.
+
+**실험 요약표:**
+_(실험의 상세 파라미터 및 성능/효율성 지표)_
+![comprehensive_experiment_log](./images/comprehensive_experiment_log.png)
 
 #### 2.1.2. 최종 Expert 모델 상세 설정
 
@@ -31,10 +35,6 @@ Expert 수준의 에이전트를 생성하기 위해 **PPO(Proximal Policy Optim
 ### 2.2. 오프라인 강화학습 (Offline Reinforcement Learning)
 
 학습된 Expert 에이전트를 활용하여 정적 데이터셋을 구축하고, 환경과의 상호작용 없이 정책을 학습하는 실험을 설계하였습니다.
-
-**실험 요약표:**
-_(실험의 상세 파라미터 및 성능/효율성 지표)_
-![comprehensive_experiment_log](./images/comprehensive_experiment_log.png)
 
 #### 2.2.1. 오프라인 데이터셋 구축
 
